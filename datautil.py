@@ -13,25 +13,33 @@ def load_rating_file_to_matrix(filename, num_users=None, num_items=None, filter_
     user_item_pairs = []
     item_counts = defaultdict(int)
 
-
+    # Primo passaggio: conteggio
     for line in lines:
         contents = line.split()
         u, i = int(contents[0]), int(contents[1])
         num_users = max(num_users, u)
         num_items = max(num_items, i)
-        #conto il numero di interazioni
         item_counts[i] += 1
-        user_item_pairs.append((u,i,contents[2] if len(contents) > 2 else 1))
+        user_item_pairs.append((u, i, contents[2] if len(contents) > 2 else 1))
 
-    #filtro sul numero di interazioni
-        allowed_items = {i for i,c in item_counts.items() if c < max_interactions}
-        user_item_pairs = [(u,i,r) for (u,i,r) in user_item_pairs if i in allowed_items]
+    # Filtro applicato solo dopo aver contato tutto
+    if filter_few_interactions:
+        allowed_items = {i for i, c in item_counts.items() if c < max_interactions}
+        original_count = len(user_item_pairs)
+        user_item_pairs = [(u, i, r) for (u, i, r) in user_item_pairs if i in allowed_items]
+        print(f"[Filtering] Keeping {len(user_item_pairs)} of {original_count} interactions (items with < {max_interactions} interactions)")
 
     train_mat = sp.dok_matrix((num_users + 1, num_items + 1), dtype=np.float32)
 
-    for u,i,r in user_item_pairs:
+    for u, i, r in user_item_pairs:
         if float(r) > 0:
-            train_mat[int(u),int(i)] = 1.0
+            train_mat[int(u), int(i)] = 1.0
+
+    # Info di sparsità
+    nonzero = train_mat.count_nonzero()
+    total = train_mat.shape[0] * train_mat.shape[1]
+    sparsity = 1 - (nonzero / total)
+    print(f"[Matrix] Shape: {train_mat.shape}, Interactions: {nonzero}, Sparsity: {sparsity:.5f}")
 
     return train_mat
 
@@ -47,14 +55,23 @@ def load_test_negatives(train, ratings):
     return negative_list
 
 
-def load_test_ratings(filename):
+def load_test_ratings(filename, allowed_items=None):
+    """
+    Carica le coppie utente-item dal file di test.
+    Se `allowed_items` è fornito, filtra le interazioni che non sono nel training set.
+    """
     rating_list = []
     lines = open(filename, "r").readlines()
 
     for line in lines:
         contents = line.split()
-        rating_list.append([int(contents[0]), int(contents[1])])
+        u, i = int(contents[0]), int(contents[1])
+        if allowed_items is None or i in allowed_items:
+            rating_list.append([u, i])
+
+    print(f"[Test Ratings] Loaded {len(rating_list)} interactions from {filename}")
     return rating_list
+
 
 
 def load_group_member_to_dict(user_in_group_path):

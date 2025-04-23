@@ -9,38 +9,49 @@ class GroupDataset(object):
             f"./data/{dataset}/userRating",
             f"./data/{dataset}/groupRating",
         )
-        # User Data
-        if dataset == "MafengwoS":
-            # num_users 11027 num_items 1236 num_groups 1215
-            self.user_train_matrix = load_rating_file_to_matrix(
-                user_path + "Train.txt", filter_few_interactions=True
-            )
-        else:
-            self.user_train_matrix = load_rating_file_to_matrix(user_path + "Train.txt",filter_few_interactions=True)
+
+        # ============= USER DATA =============
+        self.user_train_matrix = load_rating_file_to_matrix(
+            user_path + "Train.txt", filter_few_interactions=True
+        )
+
+        # Estrai gli item rimasti nel training per filtrare anche il test
+        allowed_items = set(i for _, i in self.user_train_matrix.keys())
+
         self.num_users, self.num_items = self.user_train_matrix.shape
-        self.user_test_ratings = load_test_ratings(user_path + "Test.txt")
+
+        self.user_test_ratings = load_test_ratings(
+            user_path + "Test.txt", allowed_items=allowed_items
+        )
+
         self.user_test_negatives = load_test_negatives(
             self.user_train_matrix, self.user_test_ratings
         )
-        # Group Data
+
+        # ============= GROUP DATA =============
         self.group_member_dict = load_group_member_to_dict(
             f"./data/{dataset}/groupMember.txt"
         )
         self.num_groups = len(self.group_member_dict)
+
         self.group_train_matrix = load_rating_file_to_matrix(
-            group_path + "Train.txt",
-            filter_few_interactions= True
+            group_path + "Train.txt", filter_few_interactions=True
         )
 
-        self.group_test_ratings = load_test_ratings(group_path + "Test.txt")
+        allowed_items_group = set(i for _, i in self.group_train_matrix.keys())
+
+        self.group_test_ratings = load_test_ratings(
+            group_path + "Test.txt", allowed_items=allowed_items_group
+        )
+
         self.group_test_negatives = load_test_negatives(
             self.group_train_matrix, self.group_test_ratings
         )
+
         print(
             f" #Users {self.num_users}, #Items {self.num_items}, #Groups {self.num_groups}"
         )
 
-        # train dataset info
         print(
             f"UserItemTrain: {self.user_train_matrix.count_nonzero()} interactions, "
             f"sparsity ratio: {(1 - (self.user_train_matrix.count_nonzero() / (self.num_users * self.num_items))):.5f}"
@@ -50,7 +61,7 @@ class GroupDataset(object):
             f"sparsity ratio: {(1 - (self.group_train_matrix.count_nonzero() / (self.num_groups * self.num_items))):.5f}"
         )
 
-        # build graph
+        # ============= GRAPH SETUP =============
         self.mask_rate_mat = get_uig_mask_rate(
             f"./data/{dataset}/uig_entity_value.npz",
             self.group_member_dict,
@@ -87,6 +98,7 @@ class GroupDataset(object):
                 while (u, j) in train:
                     j = np.random.randint(num_items)
                 neg_items.append(j)
+
         pos_neg_items = [
             [pos_item, neg_item] for pos_item, neg_item in zip(pos_items, neg_items)
         ]

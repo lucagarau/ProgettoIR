@@ -13,10 +13,10 @@ class GroupDataset(object):
         if dataset == "MafengwoS":
             # num_users 11027 num_items 1236 num_groups 1215
             self.user_train_matrix = load_rating_file_to_matrix(
-                user_path + "Train.txt", num_users=11026, num_items=1235
+                user_path + "Train.txt", filter_few_interactions=True
             )
         else:
-            self.user_train_matrix = load_rating_file_to_matrix(user_path + "Train.txt")
+            self.user_train_matrix = load_rating_file_to_matrix(user_path + "Train.txt",filter_few_interactions=True)
         self.num_users, self.num_items = self.user_train_matrix.shape
         self.user_test_ratings = load_test_ratings(user_path + "Test.txt")
         self.user_test_negatives = load_test_negatives(
@@ -29,8 +29,7 @@ class GroupDataset(object):
         self.num_groups = len(self.group_member_dict)
         self.group_train_matrix = load_rating_file_to_matrix(
             group_path + "Train.txt",
-            num_users=self.num_groups - 1,
-            num_items=self.num_items - 1,
+            filter_few_interactions= True
         )
 
         self.group_test_ratings = load_test_ratings(group_path + "Test.txt")

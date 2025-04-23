@@ -5,30 +5,35 @@ from collections import defaultdict
 import torch
 
 
-def load_rating_file_to_matrix(filename, num_users=None, num_items=None):
+def load_rating_file_to_matrix(filename, num_users=None, num_items=None, filter_few_interactions=False, max_interactions=5):
     if num_users is None:
         num_users, num_items = 0, 0
 
     lines = open(filename, "r").readlines()
+    user_item_pairs = []
+    item_counts = defaultdict(int)
+
+
     for line in lines:
         contents = line.split()
         u, i = int(contents[0]), int(contents[1])
         num_users = max(num_users, u)
         num_items = max(num_items, i)
+        #conto il numero di interazioni
+        item_counts[i] += 1
+        user_item_pairs.append((u,i,contents[2] if len(contents) > 2 else 1))
+
+    #filtro sul numero di interazioni
+        allowed_items = {i for i,c in item_counts.items() if c < max_interactions}
+        user_item_pairs = [(u,i,r) for (u,i,r) in user_item_pairs if i in allowed_items]
 
     train_mat = sp.dok_matrix((num_users + 1, num_items + 1), dtype=np.float32)
 
-    for line in lines:
-        contents = line.split()
-        if len(contents) > 2:
-            u, i, rating = int(contents[0]), int(contents[1]), int(contents[2])
-            if rating > 0:
-                train_mat[u, i] = 1.0
-        else:
-            u, i = int(contents[0]), int(contents[1])
-            train_mat[u, i] = 1.0
-    return train_mat
+    for u,i,r in user_item_pairs:
+        if float(r) > 0:
+            train_mat[int(u),int(i)] = 1.0
 
+    return train_mat
 
 def load_test_negatives(train, ratings):
     negative_list = []

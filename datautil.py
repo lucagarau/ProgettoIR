@@ -24,7 +24,7 @@ def load_rating_file_to_matrix(filename, num_users=None, num_items=None, filter_
 
     # Filtro applicato solo dopo aver contato tutto
     if filter_few_interactions:
-        allowed_items = {i for i, c in item_counts.items() if c < max_interactions}
+        allowed_items = {i for i, c in item_counts.items() if c > max_interactions}
         original_count = len(user_item_pairs)
         user_item_pairs = [(u, i, r) for (u, i, r) in user_item_pairs if i in allowed_items]
         print(f"[Filtering] Keeping {len(user_item_pairs)} of {original_count} interactions (items with < {max_interactions} interactions)")
@@ -41,24 +41,24 @@ def load_rating_file_to_matrix(filename, num_users=None, num_items=None, filter_
     sparsity = 1 - (nonzero / total)
     print(f"[Matrix] Shape: {train_mat.shape}, Interactions: {nonzero}, Sparsity: {sparsity:.5f}")
 
-    return train_mat
+    return train_mat, item_counts
+
 
 def load_test_negatives(train, ratings):
     negative_list = []
 
     for i in range(len(ratings)):
-        # all uninteracted items for current user
         non_inter_items = np.argwhere(train[ratings[i][0]].toarray()[0] == 0).squeeze()
-        # remove pos_item (since the evaluation puts it in candidate 0, based on whether there is candidate 0 in topK)
         negative_list.append(non_inter_items[non_inter_items != ratings[i][1]].tolist())
 
     return negative_list
 
 
-def load_test_ratings(filename, allowed_items=None):
+def load_test_ratings(filename, allowed_items=None, item_counts=None, max_interactions=None):
     """
     Carica le coppie utente-item dal file di test.
     Se `allowed_items` è fornito, filtra le interazioni che non sono nel training set.
+    Se `item_counts` e `max_interactions` sono forniti, filtra anche gli item con <= max_interactions.
     """
     rating_list = []
     lines = open(filename, "r").readlines()
@@ -66,12 +66,12 @@ def load_test_ratings(filename, allowed_items=None):
     for line in lines:
         contents = line.split()
         u, i = int(contents[0]), int(contents[1])
-        if allowed_items is None or i in allowed_items:
+        if (allowed_items is None or i in allowed_items) and \
+           (item_counts is None or max_interactions is None or item_counts.get(i, 0) > max_interactions):
             rating_list.append([u, i])
 
     print(f"[Test Ratings] Loaded {len(rating_list)} interactions from {filename}")
     return rating_list
-
 
 
 def load_group_member_to_dict(user_in_group_path):

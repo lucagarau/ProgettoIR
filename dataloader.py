@@ -11,8 +11,8 @@ class GroupDataset(object):
         )
 
         # ============= USER DATA =============
-        self.user_train_matrix = load_rating_file_to_matrix(
-            user_path + "Train.txt", filter_few_interactions=True
+        self.user_train_matrix, item_counts = load_rating_file_to_matrix(
+            user_path + "Train.txt", filter_few_interactions=False
         )
 
         # Estrai gli item rimasti nel training per filtrare anche il test
@@ -21,7 +21,7 @@ class GroupDataset(object):
         self.num_users, self.num_items = self.user_train_matrix.shape
 
         self.user_test_ratings = load_test_ratings(
-            user_path + "Test.txt", allowed_items=allowed_items
+            user_path + "Test.txt", allowed_items=None, item_counts=item_counts, max_interactions=5
         )
 
         self.user_test_negatives = load_test_negatives(
@@ -35,13 +35,13 @@ class GroupDataset(object):
         self.num_groups = len(self.group_member_dict)
 
         self.group_train_matrix = load_rating_file_to_matrix(
-            group_path + "Train.txt", filter_few_interactions=True
+            group_path + "Train.txt", filter_few_interactions=False
         )
 
         allowed_items_group = set(i for _, i in self.group_train_matrix.keys())
 
         self.group_test_ratings = load_test_ratings(
-            group_path + "Test.txt", allowed_items=allowed_items_group
+            group_path + "Test.txt", allowed_items=None, item_counts=item_counts, max_interactions=5
         )
 
         self.group_test_negatives = load_test_negatives(

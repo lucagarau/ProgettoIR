@@ -139,7 +139,7 @@ if __name__ == "__main__":
     '''
     train_model.load_state_dict(torch.load(r"C:\Users\aless\OneDrive\Desktop\ir\ProgettoIR\saved_models\CAMRa2011\model_last.pth",weights_only=True))
     train_model.eval()
-    user_hrs, user_ndcgs, user_mrr,user_hits5, user_hitsless5 = evaluate2(
+    user_hrs, user_ndcgs, user_mrr,user_hits5, user_hitsless5, user_ndcg_pop, user_ndcg_npop = evaluate2(
         train_model,
         dataset.user_test_ratings,
         dataset.user_test_negatives,
@@ -147,7 +147,7 @@ if __name__ == "__main__":
         args.topK,
         "user",
     )
-    group_hrs, group_ndcgs, group_mrr,group_hits5, group_hitsless5 = evaluate2(
+    group_hrs, group_ndcgs, group_mrr,group_hits5, group_hitsless5, group_ndcg_pop, group_ndcg_npop = evaluate2(
         train_model,
         dataset.group_test_ratings,
         dataset.group_test_negatives,
@@ -155,6 +155,6 @@ if __name__ == "__main__":
         args.topK,
         "group",
     )
-    print(f"User->HR@{args.topK}: {user_hrs}, NDCG@{args.topK}: {user_ndcgs}, MRR@{args.topK}: {user_mrr}, hits_K_gt5: {user_hits5}, hits_K_lt5: {user_hitsless5}")
-    print(f"Group->HR@{args.topK}: {group_hrs}, NDCG@{args.topK}: {group_ndcgs}, MRR@{args.topK}: {group_mrr}, hits_K_gt5: {group_hits5}, hits_K_lt5: {group_hitsless5}")
+    print(f"User->HR@{args.topK}: {user_hrs}, NDCG@{args.topK}: {user_ndcgs}, MRR@{args.topK}: {user_mrr}, hits_K_gt5: {user_hits5}, hits_K_lt5: {user_hitsless5}, ndcg_pop: {user_ndcg_pop}, ndcg_npop: {user_ndcg_npop}")
+    print(f"Group->HR@{args.topK}: {group_hrs}, NDCG@{args.topK}: {group_ndcgs}, MRR@{args.topK}: {group_mrr}, hits_K_gt5: {group_hits5}, hits_K_lt5: {group_hitsless5}, ndcg_pop: {group_ndcg_pop}, ndcg_npop: {group_ndcg_npop}")
     print("Done!")

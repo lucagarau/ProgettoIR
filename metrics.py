@@ -50,6 +50,41 @@ def get_ndcg_k(pred_rank, k):
                 ndcgs[user] = math.log(2) / math.log(j + 2)
     return np.round(np.mean(ndcgs), decimals=5)
 
+def get_ndcg_k_split(ratings, pred_rank, k):
+    # Conta le occorrenze degli item
+    item_counts = Counter([item for _, item in ratings])
+
+    # Popolari: >5 occorrenze, Non popolari: ==5
+    popular_items = set([item for item, count in item_counts.items() if count >= 5])
+    non_popular_items = set([item for item, count in item_counts.items() if count < 5])
+
+    # Liste per ndcg popolari e non popolari
+    ndcg_popular = []
+    ndcg_non_popular = []
+
+    for i, (_, true_item) in enumerate(ratings):
+        # Trova la posizione in cui si trova l’item corretto (rappresentato da 0)
+        found = False
+        for j in range(k):
+            if pred_rank[i][j] == 0:
+                dcg = math.log(2) / math.log(j + 2)  # posizione j → log(j+2)
+                found = True
+                break
+        if not found:
+            dcg = 0.0
+
+        # Assegna all’insieme corretto
+        if true_item in popular_items:
+            ndcg_popular.append(dcg)
+        elif true_item in non_popular_items:
+            ndcg_non_popular.append(dcg)
+
+    # Calcolo medie (evitiamo divisione per 0)
+    ndcg_pop = np.round(np.mean(ndcg_popular), 5) if ndcg_popular else 0.0
+    ndcg_nonpop = np.round(np.mean(ndcg_non_popular), 5) if ndcg_non_popular else 0.0
+
+    return ndcg_pop, ndcg_nonpop
+
 
 def get_mrr_k(pred_rank, k):
     mrrs = np.zeros(pred_rank.shape[0])
@@ -95,7 +130,7 @@ def evaluate(model, ratings, negatives, device, k_list, type_m="group"):
     return hits_K, ndcgs_K, mrrs_K
 
 def evaluate2(model, ratings, negatives, device, k_list, type_m="group"):
-    hits_K, ndcgs_K, mrrs_K, hits_K_gt5, hits_K_lt5 = [], [], [], [], []
+    hits_K, ndcgs_K, mrrs_K, hits_K_gt5, hits_K_lt5, ndcg_pop,ndcg_npop = [], [], [], [], [], [], []
 
     topK_rank_array = np.zeros((len(ratings), max(k_list)))
 
@@ -125,5 +160,9 @@ def evaluate2(model, ratings, negatives, device, k_list, type_m="group"):
         mrrs_K.append(get_mrr_k(topK_rank_array, k))
         hits_K_gt5.append(get_hit_k_gt5(ratings, topK_rank_array, k))
         hits_K_lt5.append(get_hit_k_lt5(ratings, topK_rank_array, k))
+        pop, npop = get_ndcg_k_split(ratings, topK_rank_array, k)
+        ndcg_pop.append(pop)
+        ndcg_npop.append(npop)
 
-    return hits_K, ndcgs_K, mrrs_K, hits_K_gt5, hits_K_lt5
+
+    return hits_K, ndcgs_K, mrrs_K, hits_K_gt5, hits_K_lt5, ndcg_pop, ndcg_npop

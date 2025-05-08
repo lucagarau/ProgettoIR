@@ -166,17 +166,23 @@ if __name__ == "__main__":
         args.topK,
         "group",
     )
-    print(f"User->HR@{args.topK}: {user_hrs}, "
-          f"NDCG@{args.topK}: {user_ndcgs}, "
-          f"MRR@{args.topK}: {user_mrr}, "
-          f"hits_K_gt5: {user_hits5}, hits_K_lt5: {user_hitsless5}, "
-          f"ndcg_pop: {user_ndcg_pop}, ndcg_npop: {user_ndcg_npop}, "
-          f"mrp_K_gt5: {user_mrp_pop}, mrp_K_lt5: {user_mrp_npop}")
+    print(f"User->HR@{args.topK}: {user_hrs}, \n"
+          f"NDCG@{args.topK}: {user_ndcgs}, \n"
+          f"MRR@{args.topK}: {user_mrr}, \n"
+          f"hits_K_gt5{args.topK}: {user_hits5}, \n"
+          f"hits_K_lt5: {user_hitsless5}, \n"
+          f"ndcg_pop{args.topK}: {user_ndcg_pop}, \n"
+          f"ndcg_npop: {user_ndcg_npop}, \n"
+          f"mrp_K_gt5{args.topK}: {user_mrp_pop}, \n"
+          f"mrp_K_lt5: {user_mrp_npop}")
 
-    print(f"Group->HR@{args.topK}: {group_hrs}, "
-          f"NDCG@{args.topK}: {group_ndcgs}, "
-          f"MRR@{args.topK}: {group_mrr}, "
-          f"hits_K_gt5: {group_hits5}, hits_K_lt5: {group_hitsless5}, "
-          f"ndcg_pop: {group_ndcg_pop}, ndcg_npop: {group_ndcg_npop}, "
-          f"mrp_K_gt5: {group_mrp_pop}, mrp_K_lt5: {group_mrp_npop}")
+    print(f"Group->HR@{args.topK}: {group_hrs}, \n"
+          f"NDCG@{args.topK}: {group_ndcgs}, \n"
+          f"MRR@{args.topK}: {group_mrr}, \n"
+          f"hits_K_gt5{args.topK}: {group_hits5}, \n"
+          f"hits_K_lt5{args.topK}: {group_hitsless5}, \n"
+          f"ndcg_pop{args.topK}: {group_ndcg_pop}, \n"
+          f"ndcg_npop{args.topK}: {group_ndcg_npop}, \n"
+          f"mrp_K_gt5{args.topK}: {group_mrp_pop}, \n"
+          f"mrp_K_lt5{args.topK}: {group_mrp_npop}")
     print("Done!")

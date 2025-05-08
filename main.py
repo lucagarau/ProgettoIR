@@ -105,41 +105,51 @@ if __name__ == "__main__":
         dataset.mask_rate_mat.to(device),
         args,
     ).to(device)
-    optimizer = optim.Adam(train_model.parameters(), lr=args.learning_rate)
-    save_path = f"saved_models/{args.dataset}"
-    os.makedirs(save_path, exist_ok=True)
-    '''
-    # train
-    for epoch_id in range(1, args.epoch + 1):
-        train_model.train()
-        user_loss, group_loss = 0, 0
-        st_time = time.time()
-        user_loss = training(
-            train_model,
-            optimizer,
-            dataset.get_user_train_dataloader(args.batch_size, args.num_negatives),
-            "user",
-        )
-        group_loss = training(
-            train_model,
-            optimizer,
-            dataset.get_group_train_dataloader(args.batch_size, args.num_negatives),
-            "group",
-        )
-
-        print(
-            f"Epoch {epoch_id}: Cost time: {time.time() - st_time:4.2f}s, Loss: [User->{user_loss:.7f}, Group->{group_loss:.7f}]"
-        )
-
-    model_save_file = os.path.join(save_path, "model_last.pth")
-    torch.save(train_model.state_dict(), model_save_file)
-    print(f"Model saved in in: {model_save_file}")
-    print("= = = = = = = = = = = = = = = = = = = =")
-    # test
-    '''
-    train_model.load_state_dict(torch.load(r"C:\Users\aless\OneDrive\Desktop\ir\ProgettoIR\saved_models\CAMRa2011\model_last.pth",weights_only=True))
+    # optimizer = optim.Adam(train_model.parameters(), lr=args.learning_rate)
+    # save_path = f"saved_models/{args.dataset}"
+    # os.makedirs(save_path, exist_ok=True)
+    # '''
+    # # train
+    # for epoch_id in range(1, args.epoch + 1):
+    #     train_model.train()
+    #     user_loss, group_loss = 0, 0
+    #     st_time = time.time()
+    #     user_loss = training(
+    #         train_model,
+    #         optimizer,
+    #         dataset.get_user_train_dataloader(args.batch_size, args.num_negatives),
+    #         "user",
+    #     )
+    #     group_loss = training(
+    #         train_model,
+    #         optimizer,
+    #         dataset.get_group_train_dataloader(args.batch_size, args.num_negatives),
+    #         "group",
+    #     )
+    #
+    #     print(
+    #         f"Epoch {epoch_id}: Cost time: {time.time() - st_time:4.2f}s, Loss: [User->{user_loss:.7f}, Group->{group_loss:.7f}]"
+    #     )
+    #
+    # model_save_file = os.path.join(save_path, "model_last.pth")
+    # torch.save(train_model.state_dict(), model_save_file)
+    # print(f"Model saved in in: {model_save_file}")
+    # print("= = = = = = = = = = = = = = = = = = = =")
+    # # test
+    # '''
+    print("modello in caricamento")
+    train_model.load_state_dict(torch.load(r".\saved_models\CAMRa2011\model_last.pth",weights_only=True))
+    print("modello caricato")
     train_model.eval()
-    user_hrs, user_ndcgs, user_mrr,user_hits5, user_hitsless5, user_ndcg_pop, user_ndcg_npop = evaluate2(
+    # user_hrs, user_ndcgs, user_mrr,user_hits5, user_hitsless5, user_ndcg_pop, user_ndcg_npop = evaluate2(
+    #     train_model,
+    #     dataset.user_test_ratings,
+    #     dataset.user_test_negatives,
+    #     device,
+    #     args.topK,
+    #     "user",
+    # )
+    user_hrs, user_ndcgs, user_mrr, user_hits5, user_hitsless5, user_ndcg_pop, user_ndcg_npop, user_mrp_pop, user_mrp_npop = evaluate2(
         train_model,
         dataset.user_test_ratings,
         dataset.user_test_negatives,
@@ -147,7 +157,8 @@ if __name__ == "__main__":
         args.topK,
         "user",
     )
-    group_hrs, group_ndcgs, group_mrr,group_hits5, group_hitsless5, group_ndcg_pop, group_ndcg_npop = evaluate2(
+
+    group_hrs, group_ndcgs, group_mrr,group_hits5, group_hitsless5, group_ndcg_pop, group_ndcg_npop, group_mrp_pop, group_mrp_npop = evaluate2(
         train_model,
         dataset.group_test_ratings,
         dataset.group_test_negatives,
@@ -155,6 +166,17 @@ if __name__ == "__main__":
         args.topK,
         "group",
     )
-    print(f"User->HR@{args.topK}: {user_hrs}, NDCG@{args.topK}: {user_ndcgs}, MRR@{args.topK}: {user_mrr}, hits_K_gt5: {user_hits5}, hits_K_lt5: {user_hitsless5}, ndcg_pop: {user_ndcg_pop}, ndcg_npop: {user_ndcg_npop}")
-    print(f"Group->HR@{args.topK}: {group_hrs}, NDCG@{args.topK}: {group_ndcgs}, MRR@{args.topK}: {group_mrr}, hits_K_gt5: {group_hits5}, hits_K_lt5: {group_hitsless5}, ndcg_pop: {group_ndcg_pop}, ndcg_npop: {group_ndcg_npop}")
+    print(f"User->HR@{args.topK}: {user_hrs}, "
+          f"NDCG@{args.topK}: {user_ndcgs}, "
+          f"MRR@{args.topK}: {user_mrr}, "
+          f"hits_K_gt5: {user_hits5}, hits_K_lt5: {user_hitsless5}, "
+          f"ndcg_pop: {user_ndcg_pop}, ndcg_npop: {user_ndcg_npop}, "
+          f"mrp_K_gt5: {user_mrp_pop}, mrp_K_lt5: {user_mrp_npop}")
+
+    print(f"Group->HR@{args.topK}: {group_hrs}, "
+          f"NDCG@{args.topK}: {group_ndcgs}, "
+          f"MRR@{args.topK}: {group_mrr}, "
+          f"hits_K_gt5: {group_hits5}, hits_K_lt5: {group_hitsless5}, "
+          f"ndcg_pop: {group_ndcg_pop}, ndcg_npop: {group_ndcg_npop}, "
+          f"mrp_K_gt5: {group_mrp_pop}, mrp_K_lt5: {group_mrp_npop}")
     print("Done!")

@@ -105,40 +105,41 @@ if __name__ == "__main__":
         dataset.mask_rate_mat.to(device),
         args,
     ).to(device)
-    # optimizer = optim.Adam(train_model.parameters(), lr=args.learning_rate)
-    # save_path = f"saved_models/{args.dataset}"
-    # os.makedirs(save_path, exist_ok=True)
-    # '''
-    # # train
-    # for epoch_id in range(1, args.epoch + 1):
-    #     train_model.train()
-    #     user_loss, group_loss = 0, 0
-    #     st_time = time.time()
-    #     user_loss = training(
-    #         train_model,
-    #         optimizer,
-    #         dataset.get_user_train_dataloader(args.batch_size, args.num_negatives),
-    #         "user",
-    #     )
-    #     group_loss = training(
-    #         train_model,
-    #         optimizer,
-    #         dataset.get_group_train_dataloader(args.batch_size, args.num_negatives),
-    #         "group",
-    #     )
-    #
-    #     print(
-    #         f"Epoch {epoch_id}: Cost time: {time.time() - st_time:4.2f}s, Loss: [User->{user_loss:.7f}, Group->{group_loss:.7f}]"
-    #     )
-    #
-    # model_save_file = os.path.join(save_path, "model_last.pth")
-    # torch.save(train_model.state_dict(), model_save_file)
-    # print(f"Model saved in in: {model_save_file}")
-    # print("= = = = = = = = = = = = = = = = = = = =")
-    # # test
-    # '''
+    optimizer = optim.Adam(train_model.parameters(), lr=args.learning_rate)
+    save_path = f"saved_models/{args.dataset}"
+    os.makedirs(save_path, exist_ok=True)
+
+    # train
+    for epoch_id in range(1, args.epoch + 1):
+        train_model.train()
+        user_loss, group_loss = 0, 0
+        st_time = time.time()
+        user_loss = training(
+            train_model,
+            optimizer,
+            dataset.get_user_train_dataloader(args.batch_size, args.num_negatives),
+            "user",
+        )
+        group_loss = training(
+            train_model,
+            optimizer,
+            dataset.get_group_train_dataloader(args.batch_size, args.num_negatives),
+            "group",
+        )
+
+        print(
+            f"Epoch {epoch_id}: Cost time: {time.time() - st_time:4.2f}s, Loss: [User->{user_loss:.7f}, Group->{group_loss:.7f}]"
+        )
+
+    model_save_file = os.path.join(save_path, "model_last.pth")
+    torch.save(train_model.state_dict(), model_save_file)
+    print(f"Model saved in in: {model_save_file}")
+    print("= = = = = = = = = = = = = = = = = = = =")
+    # test
+
     print("modello in caricamento")
-    train_model.load_state_dict(torch.load(r".\saved_models\CAMRa2011\model_last.pth",weights_only=True))
+    #train_model.load_state_dict(torch.load(r".\saved_models\CAMRa2011\model_last.pth",weights_only=True))
+    train_model.load_state_dict(torch.load(model_save_file,weights_only=True))
     print("modello caricato")
     train_model.eval()
     # user_hrs, user_ndcgs, user_mrr,user_hits5, user_hitsless5, user_ndcg_pop, user_ndcg_npop = evaluate2(

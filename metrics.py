@@ -158,19 +158,45 @@ def evaluate(model, ratings, negatives, device, k_list, type_m="group"):
 
     return hits_K, ndcgs_K, mrrs_K
 
-def evaluate2(model, ratings, negatives, device, k_list, type_m="group"):
-    hits_K, ndcgs_K, mrrs_K, hits_K_gt5, hits_K_lt5, ndcg_pop,ndcg_npop = [], [], [], [], [], [], []
+def get_mrr_k_split(ratings, pred_rank, k):
+    item_counts = Counter([item for _, item in ratings])
+    popular_items = set([item for item, count in item_counts.items() if count >= 5])
+    non_popular_items = set([item for item, count in item_counts.items() if count < 5])
 
+    mrr_popular, mrr_non_popular = [], []
+
+    for i, (_, true_item) in enumerate(ratings):
+        reciprocal = 0.0
+        for j in range(k):
+            if pred_rank[i][j] == 0:
+                reciprocal = 1.0 / (j + 1)
+                break
+
+        if true_item in popular_items:
+            mrr_popular.append(reciprocal)
+        elif true_item in non_popular_items:
+            mrr_non_popular.append(reciprocal)
+
+    mrr_pop = np.round(np.mean(mrr_popular), 5) if mrr_popular else 0.0
+    mrr_nonpop = np.round(np.mean(mrr_non_popular), 5) if mrr_non_popular else 0.0
+
+    return mrr_pop, mrr_nonpop
+
+
+def evaluate2(model, ratings, negatives, device, k_list, type_m="group"):
+    hits_K, ndcgs_K, mrrs_K = [], [], []
+    hits_K_gt5, hits_K_lt5 = [], []
+    ndcg_pop, ndcg_npop = [], []
+    mrr_pop_list, mrr_npop_list = [], []
     mrp_pop_list, mrp_npop_list = [], []
+    mrp_total_list = []
 
     topK_rank_array = np.zeros((len(ratings), max(k_list)))
 
-    #for idx in range(len(ratings)):
     for idx in tqdm(range(len(ratings)), desc="Processing ratings"):
         user_test, item_test = [], []
 
         rating = ratings[idx]
-        # candidate 0 is pos_item
         items = [rating[1]]
         items.extend(negatives[idx])
 
@@ -186,8 +212,7 @@ def evaluate2(model, ratings, negatives, device, k_list, type_m="group"):
 
         topK_rank_array[idx, :] = pred_rank[0, : max(k_list)]
 
-    #for k in k_list:
-    for k in tqdm(k_list, desc="Processing ratings"):
+    for k in tqdm(k_list, desc="Processing metrics"):
         hits_K.append(get_hit_k(topK_rank_array, k))
         ndcgs_K.append(get_ndcg_k(topK_rank_array, k))
         mrrs_K.append(get_mrr_k(topK_rank_array, k))
@@ -195,15 +220,27 @@ def evaluate2(model, ratings, negatives, device, k_list, type_m="group"):
         hits_K_gt5.append(get_hit_k_gt5(ratings, topK_rank_array, k))
         hits_K_lt5.append(get_hit_k_lt5(ratings, topK_rank_array, k))
 
-        pop, npop = get_ndcg_k_split(ratings, topK_rank_array, k)
-        ndcg_pop.append(pop)
-        ndcg_npop.append(npop)
+        pop_ndcg, npop_ndcg = get_ndcg_k_split(ratings, topK_rank_array, k)
+        ndcg_pop.append(pop_ndcg)
+        ndcg_npop.append(npop_ndcg)
 
-        mrp_pop, mrp_npop = get_mrp_k_split(ratings, topK_rank_array, k) #MRP
+        mrp_pop, mrp_npop = get_mrp_k_split(ratings, topK_rank_array, k)
         mrp_pop_list.append(mrp_pop)
         mrp_npop_list.append(mrp_npop)
 
+        mrr_pop, mrr_npop = get_mrr_k_split(ratings, topK_rank_array, k)
+        mrr_pop_list.append(mrr_pop)
+        mrr_npop_list.append(mrr_npop)
 
+        mrp_total = get_mrr_k(topK_rank_array, k)  # MRP = MRR on whole set
+        mrp_total_list.append(mrp_total)
 
-    #return hits_K, ndcgs_K, mrrs_K, hits_K_gt5, hits_K_lt5, ndcg_pop, ndcg_npop,
-    return hits_K, ndcgs_K, mrrs_K, hits_K_gt5, hits_K_lt5, ndcg_pop, ndcg_npop, mrp_pop_list, mrp_npop_list
+    return (
+        hits_K, ndcgs_K, mrrs_K,
+        hits_K_gt5, hits_K_lt5,
+        ndcg_pop, ndcg_npop,
+        mrp_pop_list, mrp_npop_list,
+        mrr_pop_list, mrr_npop_list,
+        mrp_total_list
+    )
+

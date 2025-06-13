@@ -149,7 +149,16 @@ if __name__ == "__main__":
     #     args.topK,
     #     "user",
     # )
-    user_hrs, user_ndcgs, user_mrr, user_hits5, user_hitsless5, user_ndcg_pop, user_ndcg_npop, user_mrp_pop, user_mrp_npop = evaluate2(
+
+    ### CALCOLO METRICHE
+    (
+        user_hrs, user_ndcgs, user_mrr,
+        user_hits5, user_hitsless5,
+        user_ndcg_pop, user_ndcg_npop,
+        user_mrp_pop, user_mrp_npop,
+        user_mrr_pop, user_mrr_npop,
+        user_mrp_total
+    ) = evaluate2(
         train_model,
         dataset.user_test_ratings,
         dataset.user_test_negatives,
@@ -158,7 +167,14 @@ if __name__ == "__main__":
         "user",
     )
 
-    group_hrs, group_ndcgs, group_mrr,group_hits5, group_hitsless5, group_ndcg_pop, group_ndcg_npop, group_mrp_pop, group_mrp_npop = evaluate2(
+    (
+        group_hrs, group_ndcgs, group_mrr,
+        group_hits5, group_hitsless5,
+        group_ndcg_pop, group_ndcg_npop,
+        group_mrp_pop, group_mrp_npop,
+        group_mrr_pop, group_mrr_npop,
+        group_mrp_total
+    ) = evaluate2(
         train_model,
         dataset.group_test_ratings,
         dataset.group_test_negatives,
@@ -166,23 +182,42 @@ if __name__ == "__main__":
         args.topK,
         "group",
     )
-    print(f"User->HR@{args.topK}: {user_hrs}, \n"
-          f"NDCG@{args.topK}: {user_ndcgs}, \n"
-          f"MRR@{args.topK}: {user_mrr}, \n"
-          f"hits_K_gt5{args.topK}: {user_hits5}, \n"
-          f"hits_K_lt5: {user_hitsless5}, \n"
-          f"ndcg_pop{args.topK}: {user_ndcg_pop}, \n"
-          f"ndcg_npop: {user_ndcg_npop}, \n"
-          f"mrp_K_gt5{args.topK}: {user_mrp_pop}, \n"
-          f"mrp_K_lt5: {user_mrp_npop}")
 
-    print(f"Group->HR@{args.topK}: {group_hrs}, \n"
-          f"NDCG@{args.topK}: {group_ndcgs}, \n"
-          f"MRR@{args.topK}: {group_mrr}, \n"
-          f"hits_K_gt5{args.topK}: {group_hits5}, \n"
-          f"hits_K_lt5{args.topK}: {group_hitsless5}, \n"
-          f"ndcg_pop{args.topK}: {group_ndcg_pop}, \n"
-          f"ndcg_npop{args.topK}: {group_ndcg_npop}, \n"
-          f"mrp_K_gt5{args.topK}: {group_mrp_pop}, \n"
-          f"mrp_K_lt5{args.topK}: {group_mrp_npop}")
+    print(f"\nUser Evaluation @ {args.topK}")
+    print(f"HR@K           : {user_hrs}")
+    print(f"HR@K gt5       : {user_hits5}")
+    print(f"HR@K lt5       : {user_hitsless5}")
+
+    print(f"NDCG@K         : {user_ndcgs}")
+    print(f"NDCG@K gt5     : {user_ndcg_pop}")
+    print(f"NDCG@K lt5     : {user_ndcg_npop}")
+
+    print(f"MRR@K          : {user_mrr}")
+    print(f"MRR@K gt5      : {user_mrr_pop}")
+    print(f"MRR@K lt5      : {user_mrr_npop}")
+
+    print(f"MRP@K (total)  : {user_mrp_total}")
+    print(f"MRP@K gt5      : {user_mrp_pop}")
+    print(f"MRP@K lt5      : {user_mrp_npop}")
+
+
+    print(f"\nGroup Evaluation @ {args.topK}")
+    print(f"HR@K           : {group_hrs}")
+    print(f"HR@K gt5       : {group_hits5}")
+    print(f"HR@K lt5       : {group_hitsless5}")
+
+    print(f"NDCG@K         : {group_ndcgs}")
+    print(f"NDCG@K gt5     : {group_ndcg_pop}")
+    print(f"NDCG@K lt5     : {group_ndcg_npop}")
+
+    print(f"MRR@K          : {group_mrr}")
+    print(f"MRR@K gt5      : {group_mrr_pop}")
+    print(f"MRR@K lt5      : {group_mrr_npop}")
+
+    print(f"MRP@K (total)  : {group_mrp_total}")
+    print(f"MRP@K gt5      : {group_mrp_pop}")
+    print(f"MRP@K lt5      : {group_mrp_npop}")
+
+
+
     print("Done!")

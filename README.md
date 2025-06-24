@@ -47,7 +47,7 @@ This script loads saved model weights and computes standard and fine-grained met
 - Prints statistics on item popularity
 
 ```bash
-python -u main_modello_caricato.py --dataset=Mafengwo --num_negatives=10 --num_enc_layers=2 --num_dec_layers=3 --sce_alpha=2 --drop_ratio=0.1 --epoch=200 --device=cuda:0
+python -u main_with_trained_model.py --dataset=Mafengwo --num_negatives=10 --num_enc_layers=2 --num_dec_layers=3 --sce_alpha=2 --drop_ratio=0.1 --epoch=200 --device=cuda:0
 ```
 
 Ensure that the corresponding model weights are available under:

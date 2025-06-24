@@ -6,7 +6,7 @@ import random
 import os
 import argparse
 from dataloader import GroupDataset
-from metrics import evaluate
+from metrics import evaluate2
 from model import DHMAE
 import warnings
 
@@ -106,6 +106,8 @@ if __name__ == "__main__":
         args,
     ).to(device)
     optimizer = optim.Adam(train_model.parameters(), lr=args.learning_rate)
+    save_path = f"saved_models/{args.dataset}"
+    os.makedirs(save_path, exist_ok=True)
 
     # train
     for epoch_id in range(1, args.epoch + 1):
@@ -129,10 +131,26 @@ if __name__ == "__main__":
             f"Epoch {epoch_id}: Cost time: {time.time() - st_time:4.2f}s, Loss: [User->{user_loss:.7f}, Group->{group_loss:.7f}]"
         )
 
+    model_save_file = os.path.join(save_path, "model_last.pth")
+    torch.save(train_model.state_dict(), model_save_file)
+    print(f"Model saved in in: {model_save_file}")
     print("= = = = = = = = = = = = = = = = = = = =")
     # test
+
+    print("modello in caricamento")
+    #train_model.load_state_dict(torch.load(r".\saved_models\CAMRa2011\model_last.pth",weights_only=True))
+    train_model.load_state_dict(torch.load(model_save_file,weights_only=True))
+    print("modello caricato")
     train_model.eval()
-    user_hrs, user_ndcgs, user_mrr = evaluate(
+    # user_hrs, user_ndcgs, user_mrr,user_hits5, user_hitsless5, user_ndcg_pop, user_ndcg_npop = evaluate2(
+    #     train_model,
+    #     dataset.user_test_ratings,
+    #     dataset.user_test_negatives,
+    #     device,
+    #     args.topK,
+    #     "user",
+    # )
+    user_hrs, user_ndcgs, user_mrr, user_hits5, user_hitsless5, user_ndcg_pop, user_ndcg_npop, user_mrp_pop, user_mrp_npop = evaluate2(
         train_model,
         dataset.user_test_ratings,
         dataset.user_test_negatives,
@@ -140,7 +158,8 @@ if __name__ == "__main__":
         args.topK,
         "user",
     )
-    group_hrs, group_ndcgs, user_mrr = evaluate(
+
+    group_hrs, group_ndcgs, group_mrr,group_hits5, group_hitsless5, group_ndcg_pop, group_ndcg_npop, group_mrp_pop, group_mrp_npop = evaluate2(
         train_model,
         dataset.group_test_ratings,
         dataset.group_test_negatives,
@@ -148,6 +167,23 @@ if __name__ == "__main__":
         args.topK,
         "group",
     )
-    print(f"User->HR@{args.topK}: {user_hrs}, NDCG@{args.topK}: {user_ndcgs}, MRR@{args.topK}: {user_mrr}")
-    print(f"Group->HR@{args.topK}: {group_hrs}, NDCG@{args.topK}: {group_ndcgs}, MRR@{args.topK}: {user_mrr}")
+    print(f"User->HR@{args.topK}: {user_hrs}, \n"
+          f"NDCG@{args.topK}: {user_ndcgs}, \n"
+          f"MRR@{args.topK}: {user_mrr}, \n"
+          f"hits_K_gt5{args.topK}: {user_hits5}, \n"
+          f"hits_K_lt5: {user_hitsless5}, \n"
+          f"ndcg_pop{args.topK}: {user_ndcg_pop}, \n"
+          f"ndcg_npop: {user_ndcg_npop}, \n"
+          f"mrp_K_gt5{args.topK}: {user_mrp_pop}, \n"
+          f"mrp_K_lt5: {user_mrp_npop}")
+
+    print(f"Group->HR@{args.topK}: {group_hrs}, \n"
+          f"NDCG@{args.topK}: {group_ndcgs}, \n"
+          f"MRR@{args.topK}: {group_mrr}, \n"
+          f"hits_K_gt5{args.topK}: {group_hits5}, \n"
+          f"hits_K_lt5{args.topK}: {group_hitsless5}, \n"
+          f"ndcg_pop{args.topK}: {group_ndcg_pop}, \n"
+          f"ndcg_npop{args.topK}: {group_ndcg_npop}, \n"
+          f"mrp_K_gt5{args.topK}: {group_mrp_pop}, \n"
+          f"mrp_K_lt5{args.topK}: {group_mrp_npop}")
     print("Done!")

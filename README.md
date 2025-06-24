@@ -29,20 +29,13 @@ pip install -r requirements.txt
 
 This script trains the model on the selected dataset and evaluates it using the original evaluation metrics (HR, NDCG, MRR).
 
+Example:
 ```bash
-python main.py --dataset Mafengwo --device cuda:0 --epoch 30
+python -u main.py --dataset=Mafengwo --num_negatives=10 --num_enc_layers=2 --num_dec_layers=3 --sce_alpha=2 --drop_ratio=0.1 --epoch=200 --device=cuda:0
 ```
 
-You can replace `Mafengwo` with one of the following datasets:  
-`CAMRa2011`, `Mafengwo`, `MafengwoS`, `MovieLens`, `WeeplacesS`.
 
-Optional arguments include:
 
-- `--batch_size` (default: 512)
-- `--learning_rate` (default: 0.0005)
-- `--topK` (default: [1, 5, 10, 20, 50])
-
----
 
 ### B. Run `main_with_loaded_model.py` to load pre-trained model and compute extended metrics
 
@@ -54,7 +47,7 @@ This script loads saved model weights and computes standard and fine-grained met
 - Prints statistics on item popularity
 
 ```bash
-python main_modello_caricato.py --dataset Mafengwo --device cuda:0
+python -u main_modello_caricato.py --dataset=Mafengwo --num_negatives=10 --num_enc_layers=2 --num_dec_layers=3 --sce_alpha=2 --drop_ratio=0.1 --epoch=200 --device=cuda:0
 ```
 
 Ensure that the corresponding model weights are available under:

@@ -16,6 +16,23 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 
+def count_item_popularity(dataset, popularity_threshold=5):
+    # Conteggio delle interazioni per item (sia da utenti che gruppi)
+    user_item_interactions = torch.sum(dataset.R, dim=0)  # R: user-item interaction matrix
+    group_item_interactions = torch.sum(dataset.Y, dim=0)  # Y: group-item interaction matrix
+
+    total_item_interactions = user_item_interactions + group_item_interactions
+    total_item_interactions = total_item_interactions.cpu().numpy()
+
+    popular_items = np.sum(total_item_interactions >= popularity_threshold)
+    non_popular_items = np.sum(total_item_interactions < popularity_threshold)
+
+    print(f"Dataset: {args.dataset}")
+    print(f"Popular items (≥{popularity_threshold} interactions): {popular_items}")
+    print(f"Non-popular items (<{popularity_threshold} interactions): {non_popular_items}")
+
+
+
 def set_seed(seed):
     np.random.seed(seed)
     random.seed(seed)
@@ -108,6 +125,9 @@ if __name__ == "__main__":
     optimizer = optim.Adam(train_model.parameters(), lr=args.learning_rate)
     save_path = f"saved_models/{args.dataset}"
     os.makedirs(save_path, exist_ok=True)
+
+
+
 
     # train
     for epoch_id in range(1, args.epoch + 1):
